@@ -2,6 +2,7 @@ package service;
 
 import bean.Auteur;
 import bean.Ouvrage;
+import javafx.scene.control.TextField;
 import oracle.jdbc.OracleTypes;
 import sample.Main;
 import util.Connexion;
@@ -49,18 +50,18 @@ public class OuvrageService {
     }
 
     public List<Ouvrage> findByTitre(String vTitre) {
-        List<Ouvrage> ouvrages=new ArrayList<>();
+        List<Ouvrage> ouvrages = new ArrayList<>();
         ResultSet rs;
         CallableStatement cs;
         Connection connection = Connexion.getConnection();
-        String query="begin ? := findOeuvreByTitre(?); end;";
+        String query = "begin ? := findOeuvreByTitre(?); end;";
         try {
-            cs= connection.prepareCall(query);
+            cs = connection.prepareCall(query);
             cs.registerOutParameter(1, OracleTypes.CURSOR);
-            cs.setString(2,vTitre);
+            cs.setString(2, vTitre);
             cs.execute();
-            rs= (ResultSet) cs.getObject(1);
-            while(rs.next()){
+            rs = (ResultSet) cs.getObject(1);
+            while (rs.next()) {
                 ouvrages.add(new Ouvrage(
                         rs.getLong("ID_OUV"),
                         rs.getString("TITRE"),
@@ -72,11 +73,10 @@ public class OuvrageService {
                 );
             }
             return ouvrages;
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());
-        }
-        finally {
+        } finally {
             try {
                 Connexion.close();
             } catch (SQLException e) {
@@ -88,21 +88,20 @@ public class OuvrageService {
 
     public int delete(Ouvrage ouvrage) {
         //0: exception , 1: suppresion ok, -1:ouvrage en relation avec des prêts
-        int res=0;
+        int res = 0;
         CallableStatement cs;
         Connection connection = Connexion.getConnection();
-        String query="begin ? := deleteOuvrage(?); end;";
+        String query = "begin ? := deleteOuvrage(?); end;";
         try {
-            cs= connection.prepareCall(query);
+            cs = connection.prepareCall(query);
             cs.registerOutParameter(1, OracleTypes.INTEGER);
-            cs.setLong(2,ouvrage.getId_ouv());
+            cs.setLong(2, ouvrage.getId_ouv());
             cs.executeUpdate();
-            res=cs.getInt(1);
-        }catch (Exception e) {
+            res = cs.getInt(1);
+        } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());
-        }
-        finally {
+        } finally {
             try {
                 Connexion.close();
             } catch (SQLException e) {
@@ -116,22 +115,21 @@ public class OuvrageService {
 
     public int updateStock(Ouvrage ouvrage, int vStock) {
         //0: exception , 1: modif ok,
-        int res=0;
+        int res = 0;
         CallableStatement cs;
         Connection connection = Connexion.getConnection();
-        String query="begin ? := updateStock(?,?); end;";
+        String query = "begin ? := updateStock(?,?); end;";
         try {
-            cs= connection.prepareCall(query);
+            cs = connection.prepareCall(query);
             cs.registerOutParameter(1, OracleTypes.INTEGER);
-            cs.setLong(2,ouvrage.getId_ouv());
-            cs.setInt(3,vStock);
+            cs.setLong(2, ouvrage.getId_ouv());
+            cs.setInt(3, vStock);
             cs.executeUpdate();
-            res=cs.getInt(1);
-        }catch (Exception e) {
+            res = cs.getInt(1);
+        } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());
-        }
-        finally {
+        } finally {
             try {
                 Connexion.close();
             } catch (SQLException e) {
@@ -142,5 +140,50 @@ public class OuvrageService {
 
         return res;
 
+    }
+
+    public List<Ouvrage> findByCriteria(String vTitre, String domaine, Auteur auteur, String site) {
+        List<Ouvrage> ouvrages = new ArrayList<>();
+        ResultSet rs;
+        String query = "SELECT * FROM ouvrage WHERE 1=1";
+        if (vTitre != null && !vTitre.isEmpty()) {
+            query += " AND titre LIKE CONCAT('%',CONCAT('" + vTitre + "','%'))";
+        }
+        if (domaine != null && !domaine.isEmpty()) {
+            query += " AND domaine LIKE CONCAT('%',CONCAT('" + domaine + "','%'))";
+        }
+        if (auteur != null && auteur.getId_aut() != 0) {
+            query += " AND id_auteur =" + auteur.getId_aut();
+        }
+        if (site != null && !site.isEmpty()) {
+            query += " AND site ='" + site + "'";
+        }
+        query += " ORDER BY titre ASC";
+        System.out.println(query);
+        try {
+            rs = Connexion.executeQuery(query);
+            while (rs.next()) {
+                ouvrages.add(new Ouvrage(
+                        rs.getString("titre"),
+                        rs.getString("editeur"),
+                        rs.getInt("annee"),
+                        rs.getString("domaine"),
+                        rs.getInt("stock"),
+                        rs.getString("site"),
+                        new Auteur(rs.getString("auteur"))
+                ));
+            }
+            return ouvrages;
+        } catch (Exception e) {
+            System.err.println("Got an exception! ");
+            System.err.println(e.getMessage());
+        } finally {
+            try {
+                Connexion.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return ouvrages;
     }
 }

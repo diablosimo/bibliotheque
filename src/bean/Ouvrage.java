@@ -17,6 +17,16 @@ public class Ouvrage {
         this.titre = titre;
     }
 
+    public Ouvrage( String titre, String editeur, int annee, String domaine, int stock, String site, Auteur auteur) {
+        this.titre = titre;
+        this.editeur = editeur;
+        this.annee = annee;
+        this.domaine = domaine;
+        this.stock = stock;
+        this.site = site;
+        this.auteur = auteur;
+    }
+
     public Ouvrage(long id_ouv, String titre, String editeur, int annee, String domaine, int stock, Auteur auteur) {
         this.id_ouv = id_ouv;
         this.titre = titre;

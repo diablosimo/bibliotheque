@@ -31,3 +31,9 @@
     -fx-fill: white;
     -fx-effect: dropshadow( gaussian , #052555 , 0,0,0,2 );
 }
+
+#s{
+    -fx-background-image: url("image/first.png");
+    -fx-background-size: 100%;
+
+}

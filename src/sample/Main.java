@@ -15,8 +15,6 @@ import util.Util;
 import java.io.IOException;
 
 public class Main extends Application {
-    public static String site="FST";
-
     @Override
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("../view/dashboard.fxml"));
